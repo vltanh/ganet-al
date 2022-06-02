@@ -90,7 +90,8 @@ def group_points(seeds, center_seeds, thr, by_center_thr=None):
             if idx_group < 0:
                 groups.append([(idx, coord, score, center)])
             else:
-                groups[idx_group].append((idx, coord, score, center))  # belong to one line or nearby points
+                # belong to one line or nearby points
+                groups[idx_group].append((idx, coord, score, center))
         # TODO
         # print('group size: {}   cluster thr: {}'.format(len(groups), thr))
         return groups, groups_centers_mean
@@ -147,7 +148,8 @@ def group_points_fast(seeds, center_seeds, thr, by_center_thr=None):
             if idx_group < 0:
                 groups.append([(idx, align, center)])
             else:
-                groups[idx_group].append((idx, align, center))  # belong to one line or nearby points
+                # belong to one line or nearby points
+                groups[idx_group].append((idx, align, center))
         # TODO
         # print('group size: {}   cluster thr: {}'.format(len(groups), thr))
         return groups, groups_centers
@@ -171,18 +173,19 @@ def group_points_fast(seeds, center_seeds, thr, by_center_thr=None):
 
         # group key points by center
         for idx, (align, center) in enumerate(points):
-            idx_group = search_groups_by_centers(center, groups_centers_mean, by_center_thr)
+            idx_group = search_groups_by_centers(
+                center, groups_centers_mean, by_center_thr)
             if idx_group < 0:
                 # groups.append([(idx, align, center)])
                 continue
             else:
-                groups[idx_group].append((idx, align, center))  # belong to one line or nearby points
+                # belong to one line or nearby points
+                groups[idx_group].append((idx, align, center))
         # TODO
         # print('group size: {}  cluster thr: {} cluster by center thr {}'.format(len(groups),
         #                                                                         thr,
         #                                                                         by_center_thr))
         return groups, groups_centers_mean
-
 
     if by_center_thr is None:
         groups, groups_centers = update_coords_fast(points=seeds, thr=thr)
@@ -221,8 +224,10 @@ class PostProcessor(object):
             centers = []
             if len(group) > 1:
                 for point in group:
-                    points.append([point[1][0] * downscale, point[1][1] * downscale])
-                    centers.append([point[-1][0] * downscale, point[-1][1] * downscale])
+                    points.append([point[1][0] * downscale,
+                                  point[1][1] * downscale])
+                    centers.append([point[-1][0] * downscale,
+                                   point[-1][1] * downscale])
                 # points = ploy_fitting_cube(points, h=320, w=800, sample_num=150)
                 lanes.append(
                     dict(
@@ -257,6 +262,7 @@ class PostProcessor(object):
                                                   self.cluster_thr,
                                                   self.cluster_by_center_thr)
 
-        lanes, cluster_centers = self.lane_post_process(kpt_groups, cpt_groups, downscale=downscale)
+        lanes, cluster_centers = self.lane_post_process(
+            kpt_groups, cpt_groups, downscale=downscale)
 
         return lanes, cluster_centers

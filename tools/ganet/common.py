@@ -62,15 +62,14 @@ COLORS = [
 ]
 
 
-def parse_lanes(preds, filename, img_shape):
-
+def parse_lanes(preds, filename, img_shape, ext='.jpg'):
     def normalize_coords(coords):
         res = []
         for coord in coords:
             res.append((int(coord[0] + 0.5), int(coord[1] + 0.5)))
         return res
 
-    anno_dir = filename.replace('.jpg', '.lines.txt')
+    anno_dir = filename.replace(ext, '.lines.txt')
     preds = [normalize_coords(coord) for coord in preds]
     annos = []
     with open(anno_dir, 'r') as anno_f:
@@ -83,7 +82,6 @@ def parse_lanes(preds, filename, img_shape):
         for i in range(len(coords_tmp) // 2):
             coords.append([coords_tmp[2 * i], coords_tmp[2 * i + 1]])
         annos.append(normalize_coords(coords))
-
     return preds, annos
 
 
@@ -129,7 +127,8 @@ def get_line_intersection(y, line, im_width, reg_x=-2):
     for i in range(len(line) - 1):
         point_start, point_end = line[i], line[i + 1]
         if in_line_range(y, point_start[1], point_end[1]):
-            k = (point_end[0] - point_start[0]) / (point_end[1] - point_start[1])
+            k = (point_end[0] - point_start[0]) / \
+                (point_end[1] - point_start[1])
             reg_x = int(k * (y - point_start[1]) + point_start[0] + 0.49999)
             break
 

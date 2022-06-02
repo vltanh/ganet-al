@@ -1,12 +1,9 @@
-import math
-
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
-import numpy as np
+
 from mmdet.models.builder import LOSSES, build_loss
-from torch.utils.tensorboard import SummaryWriter
-from .smooth_l1_loss import SmoothL1Loss
+
 
 class CrossEntropyLoss(nn.Module):
 
@@ -37,7 +34,8 @@ def _neg_loss(pred, gt, channel_weights=None):
     loss = 0
 
     pos_loss = torch.log(pred) * torch.pow(1 - pred, 2) * pos_inds
-    neg_loss = torch.log(1 - pred) * torch.pow(pred, 2) * neg_weights * neg_inds
+    neg_loss = torch.log(1 - pred) * torch.pow(pred, 2) * \
+        neg_weights * neg_inds
 
     num_pos = pos_inds.float().sum()
     if channel_weights is None:
@@ -73,7 +71,6 @@ class FocalLoss(nn.Module):
 
 
 class RegL1KpLoss(nn.Module):
-
     def __init__(self):
         super(RegL1KpLoss, self).__init__()
 
@@ -91,11 +88,17 @@ def compute_locations(shape, device):
     pos = pos.repeat(shape[0], shape[1], shape[2], 1)
     return pos
 
+
 @LOSSES.register_module
 class LaneLossAggress(torch.nn.Module):
-    def __init__(self,
-                 loss_reg=dict(
-                     type='SmoothL1Loss', beta=1.0 / 9.0, loss_weight=1.0)):
+    def __init__(
+        self,
+        loss_reg=dict(
+            type='SmoothL1Loss',
+            beta=1.0 / 9.0,
+            loss_weight=1.0,
+        ),
+    ):
         super(LaneLossAggress, self).__init__()
         self.focalloss = FocalLoss()
         self.smoothl1loss = build_loss(loss_reg)
@@ -106,7 +109,11 @@ class LaneLossAggress(torch.nn.Module):
         for i, loss_item in enumerate(outputs):
             loss_func = getattr(self, loss_item['type'])
             if "mask" in loss_item:
-                loss_result[f"{i}_{loss_item['type']}"] = loss_func(loss_item['pred'], loss_item['gt'], loss_item['mask'])*loss_item.get('weight', 1.0)
+                loss_result[f"{i}_{loss_item['type']}"] = \
+                    loss_func(loss_item['pred'], loss_item['gt'], loss_item['mask']) \
+                    * loss_item.get('weight', 1.0)
             else:
-                loss_result[f"{i}_{loss_item['type']}"] = loss_func(loss_item['pred'], loss_item['gt'])*loss_item.get('weight', 1.0)
+                loss_result[f"{i}_{loss_item['type']}"] = \
+                    loss_func(loss_item['pred'], loss_item['gt']) \
+                    * loss_item.get('weight', 1.0)
         return loss_result

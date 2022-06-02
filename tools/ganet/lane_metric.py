@@ -41,6 +41,7 @@ def calc_y(f, t):
     """
     return f['a_y'] + f['b_y'] * t + f['c_y'] * t * t + f['d_y'] * t * t * t
 
+
 def spline_interp(*, lane, step_t=1):
     """Interp a line.
 
@@ -85,7 +86,8 @@ def calc_params(lane):
         a_y = lane[0]['y']
         b_x = (lane[1]['x'] - a_x) / h0
         b_y = (lane[1]['y'] - a_y) / h0
-        params.append({"a_x": a_x, "b_x": b_x, "c_x": 0, "d_x": 0, "a_y": a_y, "b_y": b_y, "c_y": 0, "d_y": 0, "h": h0})
+        params.append({"a_x": a_x, "b_x": b_x, "c_x": 0, "d_x": 0,
+                      "a_y": a_y, "b_y": b_y, "c_y": 0, "d_y": 0, "h": h0})
         return params
     h = []
     for i in range(n_pt - 1):
@@ -132,12 +134,14 @@ def calc_params(lane):
 
     for i in range(n_pt - 1):
         a_x = lane[i]['x']
-        b_x = (lane[i + 1]['x'] - lane[i]['x']) / h[i] - (2 * h[i] * Mx[i] + h[i] * Mx[i + 1]) / 6
+        b_x = (lane[i + 1]['x'] - lane[i]['x']) / h[i] - \
+            (2 * h[i] * Mx[i] + h[i] * Mx[i + 1]) / 6
         c_x = Mx[i] / 2
         d_x = (Mx[i + 1] - Mx[i]) / (6 * h[i])
 
         a_y = lane[i]['y']
-        b_y = (lane[i + 1]['y'] - lane[i]['y']) / h[i] - (2 * h[i] * My[i] + h[i] * My[i + 1]) / 6
+        b_y = (lane[i + 1]['y'] - lane[i]['y']) / h[i] - \
+            (2 * h[i] * My[i] + h[i] * My[i + 1]) / 6
         c_y = My[i] / 2
         d_y = (My[i + 1] - My[i]) / (6 * h[i])
 
@@ -145,6 +149,7 @@ def calc_params(lane):
             {"a_x": a_x, "b_x": b_x, "c_x": c_x, "d_x": d_x, "a_y": a_y, "b_y": b_y, "c_y": c_y, "d_y": d_y, "h": h[i]})
 
     return params
+
 
 def resize_lane(lane, x_ratio, y_ratio):
     """Resize the coordinate of a lane accroding image resize ratio.
@@ -232,8 +237,10 @@ def evaluate_core(*, gt_lanes, pr_lanes, gt_wh, pr_wh, hyperp):
         # all the gt and pr are mapping to src img, so the scale ratio is same,
         # note that the scale ratio is not a factor but a divisor
         # print('gt_lane',gt_lanes)
-        gt_lanes = list(map(lambda lane: resize_lane(lane, gt_x_ratio, gt_y_ratio), gt_lanes))
-        pr_lanes = list(map(lambda lane: resize_lane(lane, pr_x_ratio, pr_y_ratio), pr_lanes))
+        gt_lanes = list(map(lambda lane: resize_lane(
+            lane, gt_x_ratio, gt_y_ratio), gt_lanes))
+        pr_lanes = list(map(lambda lane: resize_lane(
+            lane, pr_x_ratio, pr_y_ratio), pr_lanes))
 
         sorted_gt_lanes = gt_lanes
         sorted_pr_lanes = pr_lanes
@@ -306,7 +313,8 @@ class LaneMetricCore(object):
             if len(line_spec) > 0:
                 pr_lanes.append(line_spec)
 
-        result = evaluate_core(gt_lanes=gt_lanes, pr_lanes=pr_lanes, gt_wh=gt_wh, pr_wh=pr_wh, hyperp=self.eval_params)
+        result = evaluate_core(gt_lanes=gt_lanes, pr_lanes=pr_lanes,
+                               gt_wh=gt_wh, pr_wh=pr_wh, hyperp=self.eval_params)
 
         self.result_record.append(result)
 
@@ -321,5 +329,6 @@ class LaneMetricCore(object):
         gt_num = sum(result['gt_num'] for result in self.result_record)
         precision = hit_num / (pr_num + sys.float_info.epsilon)
         recall = hit_num / (gt_num + sys.float_info.epsilon)
-        f1_measure = 2 * precision * recall / (precision + recall + sys.float_info.epsilon)
+        f1_measure = 2 * precision * recall / \
+            (precision + recall + sys.float_info.epsilon)
         return dict(f1_measure=f1_measure, precision=precision, recall=recall, pr_num=pr_num, gt_num=gt_num)

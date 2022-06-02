@@ -15,6 +15,7 @@ torch.backends.cudnn.deterministic = True
 
 SIZE = (800, 320)
 
+
 def parse_args():
     parser = argparse.ArgumentParser(description='MMDet test detector')
     parser.add_argument('config', help='test config file path')

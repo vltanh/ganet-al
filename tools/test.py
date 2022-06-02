@@ -16,21 +16,33 @@ from mmdet.models import build_detector
 
 def parse_args():
     parser = argparse.ArgumentParser(
-        description='MMDet test (and eval) a model')
-    parser.add_argument('config', help='test config file path')
-    parser.add_argument('checkpoint', help='checkpoint file')
-    parser.add_argument('--out', help='output result file in pickle format')
+        description='MMDet test (and eval) a model',
+    )
+    parser.add_argument(
+        'config',
+        help='test config file path',
+    )
+    parser.add_argument(
+        'checkpoint',
+        help='checkpoint file',
+    )
+    parser.add_argument(
+        '--out',
+        help='output result file in pickle format',
+    )
     parser.add_argument(
         '--fuse-conv-bn',
         action='store_true',
         help='Whether to fuse conv and bn, this will slightly increase'
-        'the inference speed')
+        'the inference speed',
+    )
     parser.add_argument(
         '--format-only',
         action='store_true',
         help='Format the output results without perform evaluation. It is'
         'useful when you want to format the result to a specific format and '
-        'submit it to the test server')
+        'submit it to the test server',
+    )
     parser.add_argument(
         '--eval',
         type=str,
