@@ -66,6 +66,7 @@ class GANet(SingleStageDetector):
     def forward_train(self, img, img_metas, **kwargs):
         # kwargs -> ['exist_mask', 'instance_mask', 'gauss_mask', 'hm_down_scale', 'lane_points']
         # shape [8 128 80 200]  swin [B C 40 100]
+        # print(img_metas[0]['filename'])
         output = self.backbone(img.type(torch.cuda.FloatTensor))
         output = self.neck(output)  # features, deform_points
         if self.head:
@@ -73,7 +74,7 @@ class GANet(SingleStageDetector):
                 self.bbox_head.forward_train(
                     output['features'],
                     output.get("aux_feat", None),
-                )
+            )
         cpts_hm = torch.clamp(torch.sigmoid(cpts_hm), min=1e-4, max=1 - 1e-4)
         kpts_hm = torch.clamp(torch.sigmoid(kpts_hm), min=1e-4, max=1 - 1e-4)
 
@@ -157,11 +158,18 @@ class GANet(SingleStageDetector):
         output = self.backbone(img.type(torch.cuda.FloatTensor))
         output = self.neck(output)  # shape [8 64 80 200]
         if self.head:
-            [cpts_hm, kpts_hm, pts_offset, int_offset] = self.bbox_head.forward_train(output['features'],
-                                                                                      output.get("aux_feat", None))
-            seeds, hm = self.bbox_head.forward_test(output['features'], output.get("aux_feat", None), hack_seeds,
-                                                    kwargs['thr'], kwargs['kpt_thr'],
-                                                    kwargs['cpt_thr'])
+            [cpts_hm, kpts_hm, pts_offset, int_offset] = self.bbox_head.forward_train(
+                output['features'],
+                output.get("aux_feat", None),
+            )
+            seeds, hm = self.bbox_head.forward_test(
+                output['features'],
+                output.get("aux_feat", None),
+                hack_seeds,
+                kwargs['thr'],
+                kwargs['kpt_thr'],
+                kwargs['cpt_thr'],
+            )
         output['cpts_hm'] = cpts_hm
         output['kpts_hm'] = kpts_hm
         output['pts_offset'] = pts_offset

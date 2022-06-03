@@ -11,7 +11,7 @@ N_ROUND=10
 N_INIT=200
 N_SAMPLE=200
 
-N_EPOCH=25
+N_EPOCH=50
 
 OUT_ROOT="checkpoints/"$DATASET"/"$STRATEGY"/"$VIDEO_IDX"/"
 
@@ -74,7 +74,7 @@ do
     python strategy/random_sampling.py \
         --inp_path $unlabeled_pool \
         --out_path $labeled_pool \
-        --n_sample $N_INIT
+        --n_sample $N_SAMPLE
 
     # Remove used samples
     new_unlabeled_pool=""$round_out_root"/unlabeled.txt"

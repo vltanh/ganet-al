@@ -41,7 +41,7 @@ img_norm_cfg = dict(
     to_rgb=False,
 )
 ori_scale = (1920, 1080)  # for culane
-crop_bbox = [0, 420, 1920, 1080]
+crop_bbox = [0, 495, 1920, 1080]
 img_scale = (800, 320)
 train_cfg = dict(
     out_scale=mask_down_scale,

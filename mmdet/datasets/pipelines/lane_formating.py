@@ -51,7 +51,8 @@ def draw_umich_gaussian(heatmap, center, radius, k=1):
     left, right = min(x, radius), min(width - x, radius + 1)
     top, bottom = min(y, radius), min(height - y, radius + 1)
     masked_heatmap = heatmap[y - top:y + bottom, x - left:x + right]
-    masked_gaussian = gaussian[radius - top:radius + bottom, radius - left:radius + right]
+    masked_gaussian = gaussian[radius - top:radius +
+                               bottom, radius - left:radius + right]
 
     if min(masked_gaussian.shape) > 0 and min(
             masked_heatmap.shape) > 0:  # TODO debug
@@ -90,14 +91,16 @@ def get_line_intersection(x, y, line):
     for i in range(len(line) - 1):
         point_start, point_end = line[i], line[i + 1]
         if in_line_range(x, point_start[0], point_end[0]):
-            k = (point_end[1] - point_start[1]) / (point_end[0] - point_start[0])  # deltaY/deltaX
+            k = (point_end[1] - point_start[1]) / \
+                (point_end[0] - point_start[0])  # deltaY/deltaX
             reg_y.append(k * (x - point_start[0]) + point_start[1])
     reg_y = choose_min_reg(reg_y, y)
 
     for i in range(len(line) - 1):
         point_start, point_end = line[i], line[i + 1]
         if in_line_range(y, point_start[1], point_end[1]):
-            k = (point_end[0] - point_start[0]) / (point_end[1] - point_start[1])
+            k = (point_end[0] - point_start[0]) / \
+                (point_end[1] - point_start[1])
             reg_x.append(k * (y - point_start[1]) + point_start[0])
     reg_x = choose_min_reg(reg_x, x)
     return reg_x, reg_y
@@ -144,6 +147,12 @@ def ploy_fitting_cube_extend(line, h, w, sample_num=100):
     return np.concatenate([iy3[:, None], new_x[:, None]], axis=1)
 
 
+def remove_duplicate_rows(data):
+    sorted_data = data[np.lexsort(data.T), :]
+    row_mask = np.append([True], np.any(np.diff(sorted_data, axis=0), 1))
+    return sorted_data[row_mask]
+
+
 def ploy_fitting_cube(line, h, w, sample_num=100):
     # Y->X
     line_coords = np.array(line).reshape((-1, 2))
@@ -151,10 +160,14 @@ def ploy_fitting_cube(line, h, w, sample_num=100):
     line_coords = line_coords[line_coords[:, 0] > 0, :]
     line_coords = line_coords[line_coords[:, 0] < w, :]
 
+    line_coords = np.array([
+        [line_coords[line_coords[:, 1] == i, 0].mean(), i]
+        for i in np.unique(line_coords[:, 1])
+    ])
+
     X = line_coords[:, 1]
-    # print('line coords X : {}'.format(X.shape))
     Y = line_coords[:, 0]
-    # print('line coords Y : {}'.format(Y.shape))
+
     if len(X) < 2:
         return None
     new_x = np.linspace(max(X[0], 0), min(X[-1], h), sample_num)
@@ -162,9 +175,13 @@ def ploy_fitting_cube(line, h, w, sample_num=100):
     if len(X) > 3:
         ipo3 = spi.splrep(X, Y, k=3)
         iy3 = spi.splev(new_x, ipo3)
+        # print(X, Y)
+        # print(iy3)
+        # input()
     else:
         ipo3 = spi.splrep(X, Y, k=1)
         iy3 = spi.splev(new_x, ipo3)
+
     return np.concatenate([iy3[:, None], new_x[:, None]], axis=1)
 
 
@@ -179,7 +196,8 @@ def ploy_fitting(line, downscale=1):
     ploy_fit = np.polyfit(line_x, line_y, 3)
     ploy_func = np.poly1d(ploy_fit)
     # nums = int(np.abs(line_x[-1]) - line_x[0])
-    ploy_x = np.linspace(line_x[0], line_x[-1], int(np.abs(line_x[-1] - line_x[0]) / downscale))
+    ploy_x = np.linspace(line_x[0], line_x[-1],
+                         int(np.abs(line_x[-1] - line_x[0]) / downscale))
     ploy_y = ploy_func(ploy_x)
     for x, y in zip(ploy_x, ploy_y):
         xy.append((x, y))
@@ -281,7 +299,8 @@ def extend_line(line, dis=10):
     norm = math.sqrt(dx ** 2 + dy ** 2)
     dx = dx / norm  # cos(theta)
     dy = dy / norm  # sin(theta)
-    extend_point = np.array((end[0] + dx * dis, end[1] + dy * dis)).reshape(1, 2)
+    extend_point = np.array(
+        (end[0] + dx * dis, end[1] + dy * dis)).reshape(1, 2)
     extended = np.append(extended, extend_point, axis=0)
     return extended
 
@@ -306,7 +325,7 @@ def sort_line_func(a, b):
             flag = in_line_range(y, point_start[1], point_end[1])
             if flag == 2:
                 k = (point_end[0] - point_start[0]) / (
-                        point_end[1] - point_start[1])
+                    point_end[1] - point_start[1])
                 reg_x.append(k * (y - point_start[1]) + point_start[0])
             elif flag == 1:
                 reg_x.append((point_start[0] + point_end[0]) / 2)
@@ -417,9 +436,11 @@ class CollectLanePoints(Collect):
         # gt init
         gt_hm = np.zeros((1, hm_h, hm_w), np.float32)
         reg_hm = np.zeros((2, hm_h, hm_w), np.float32)  # down sample offset
-        offset_hm = np.zeros((2 * self.joint_nums, hm_h, hm_w), np.float32)  # key points -> center points offset
+        # key points -> center points offset
+        offset_hm = np.zeros((2 * self.joint_nums, hm_h, hm_w), np.float32)
         offset_mask = np.zeros((1, hm_h, hm_w), np.float32)
-        offset_mask_weight = np.zeros((2 * self.joint_nums, hm_h, hm_w), np.float32)
+        offset_mask_weight = np.zeros(
+            (2 * self.joint_nums, hm_h, hm_w), np.float32)
         instance_mask = -1 * np.ones([hm_h, hm_w])
         exist_mask = np.zeros([hm_h, hm_w])
         int_error_mask = np.zeros([2, hm_h, hm_w])
@@ -440,21 +461,36 @@ class CollectLanePoints(Collect):
             for i, pts in enumerate(gt_points):  # per lane
                 # pts shape[sample_per_lane, 2] sorted by y
                 pts = convert_list(pts, fpn_down_scale)
-                pts = sorted(pts, key=cmp_to_key(lambda a, b: b[-1] - a[-1]))  # down sort by y
+                pts = sorted(
+                    pts,
+                    key=cmp_to_key(lambda a, b: b[-1] - a[-1]),
+                )  # down sort by y
                 if self.lane_extend:
-                    pts = ploy_fitting_cube_extend(pts, fn_h, fn_w, self.sample_per_lane[l])
+                    pts = ploy_fitting_cube_extend(
+                        pts,
+                        fn_h, fn_w,
+                        self.sample_per_lane[l],
+                    )
                 else:
-                    pts = ploy_fitting_cube(pts, fn_h, fn_w, self.sample_per_lane[l])
+                    pts = ploy_fitting_cube(
+                        pts,
+                        fn_h, fn_w,
+                        self.sample_per_lane[l],
+                    )
                 if pts is not None:
                     pts_f = clip_line(pts, fn_h, fn_w)
                     pts = np.int32(pts_f)
                     lane_points.append(pts[None, :, ::-1])  # y, x
-            lane_points_align = -1 * np.ones([self.max_lane_num, self.sample_per_lane[l], 2])
+
+            lane_points_align = -1 * \
+                np.ones([self.max_lane_num, self.sample_per_lane[l], 2])
             if len(lane_points) != 0:
-                lane_points_align[:len(lane_points)] = np.concatenate(lane_points, axis=0)
+                lane_points_align[:len(lane_points)] = np.concatenate(
+                    lane_points, axis=0)
             else:
                 gauss_mask = gt_hm
-            results[f'lane_points_l{l}'] = DC(to_tensor(lane_points_align).float(), stack=True, pad_dims=None)
+            results[f'lane_points_l{l}'] = DC(
+                to_tensor(lane_points_align).float(), stack=True, pad_dims=None)
 
         # print(len(gt_points))
         for pts in gt_points:  # per lane
@@ -467,13 +503,16 @@ class CollectLanePoints(Collect):
             # pts = ploy_fitting(pts, self.kpt_downscale)
 
             if self.lane_extend:
-                pts = ploy_fitting_cube_extend(pts, hm_h, hm_w, int(360 / self.hm_down_scale))
+                pts = ploy_fitting_cube_extend(
+                    pts, hm_h, hm_w, int(360 / self.hm_down_scale))
             else:
-                pts = ploy_fitting_cube(pts, hm_h, hm_w, int(360 / self.hm_down_scale))
+                pts = ploy_fitting_cube(
+                    pts, hm_h, hm_w, int(360 / self.hm_down_scale))
             if pts is None:
                 continue
 
-            pts = sorted(pts, key=cmp_to_key(lambda a, b: b[-1] - a[-1]))  # down sort by y
+            pts = sorted(pts, key=cmp_to_key(
+                lambda a, b: b[-1] - a[-1]))  # down sort by y
             pts = clamp_line(pts, box=[0, 0, hm_w - 1, hm_h - 1], min_length=1)
 
             if pts is not None and len(pts) > 1:
@@ -488,7 +527,8 @@ class CollectLanePoints(Collect):
                 # TODO: draw gt gaussian heatmap
                 for pt in pts:
                     pt_int = (int(pt[0]), int(pt[1]))
-                    draw_umich_gaussian(gt_kpts_hm[0], pt_int, radius=self.radius)  # key points
+                    draw_umich_gaussian(
+                        gt_kpts_hm[0], pt_int, radius=self.radius)  # key points
                     # TODO : down sample offset map
                     # reg = pt - pt_int
                     reg_x = pt[0] - pt_int[0]
@@ -496,7 +536,8 @@ class CollectLanePoints(Collect):
                     reg_hm[0, pt_int[1], pt_int[0]] = reg_x  # [C H W]
                     reg_hm[1, pt_int[1], pt_int[0]] = reg_y  # [C H W]
                     if abs(reg_x) < 2 and abs(reg_y) < 2:
-                        offset_mask[0, pt_int[1], pt_int[0]] = 1  # mask where have points
+                        # mask where have points
+                        offset_mask[0, pt_int[1], pt_int[0]] = 1
 
                     # TODO : key points -> root_i point offset for each lane
 
@@ -508,9 +549,12 @@ class CollectLanePoints(Collect):
                         offset_y = joint_points[i][1] - pt[1]
                         # print('ground truth offset x:{} offset y:{}'.format(offset_x, offset_y))
                         # weight mask
-                        mask_value = assign_weight(offset_y, max_y, self.joint_nums, self.joint_weights)
-                        offset_mask_weight[2 * i, pt_int[1], pt_int[0]] = mask_value
-                        offset_mask_weight[2 * i + 1, pt_int[1], pt_int[0]] = mask_value
+                        mask_value = assign_weight(
+                            offset_y, max_y, self.joint_nums, self.joint_weights)
+                        offset_mask_weight[2 * i, pt_int[1],
+                                           pt_int[0]] = mask_value
+                        offset_mask_weight[2 * i + 1,
+                                           pt_int[1], pt_int[0]] = mask_value
 
                         offset_hm[2 * i, pt_int[1], pt_int[0]] = offset_x
                         offset_hm[2 * i + 1, pt_int[1], pt_int[0]] = offset_y
@@ -518,18 +562,23 @@ class CollectLanePoints(Collect):
         # draw start points
         if len(start_points) > 0:
             for start_point in start_points:
-                draw_umich_gaussian(gt_hm[0], start_point, radius=self.root_radius)  # start points
+                draw_umich_gaussian(
+                    gt_hm[0], start_point, radius=self.root_radius)  # start points
 
-        results['gt_cpts_hm'] = DC(to_tensor(gt_hm).float(), stack=True, pad_dims=None)
-        results['gt_kpts_hm'] = DC(to_tensor(gt_kpts_hm).float(), stack=True, pad_dims=None)
-        results['int_offset'] = DC(to_tensor(reg_hm).float(), stack=True, pad_dims=None)  # downsample offset
+        results['gt_cpts_hm'] = DC(
+            to_tensor(gt_hm).float(), stack=True, pad_dims=None)
+        results['gt_kpts_hm'] = DC(
+            to_tensor(gt_kpts_hm).float(), stack=True, pad_dims=None)
+        results['int_offset'] = DC(to_tensor(reg_hm).float(
+        ), stack=True, pad_dims=None)  # downsample offset
         results['pts_offset'] = DC(to_tensor(offset_hm).float(), stack=True,
                                    pad_dims=None)  # key points -> center point offset
         results['offset_mask'] = DC(to_tensor(offset_mask).float(), stack=True,
                                     pad_dims=None)  # key points -> center point offset
         results['offset_mask_weight'] = DC(to_tensor(offset_mask_weight).float(), stack=True,
                                            pad_dims=None)  # key points -> center point offset
-        results['gt_vp_hm'] = DC(to_tensor(gt_vp_hm).float(), stack=True, pad_dims=None)
+        results['gt_vp_hm'] = DC(
+            to_tensor(gt_vp_hm).float(), stack=True, pad_dims=None)
         results['gt_masks'] = gt_masks
         results['down_scale'] = self.down_scale
         results['hm_down_scale'] = self.hm_down_scale
