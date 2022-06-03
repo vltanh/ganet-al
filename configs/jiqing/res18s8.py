@@ -394,6 +394,7 @@ lr_config = dict(
 # runtime settings
 checkpoint_config = dict(
     interval=1,
+    max_keep_ckpts=1,
 )
 log_config = dict(
     interval=1,

@@ -163,54 +163,54 @@ def parse_lanes(preds, filename, img_shape, ext='.jpg'):
             res.append((int(coord[0] + 0.5), int(coord[1] + 0.5)))
         return res
 
-    anno_dir = filename.replace(
-        'images_train', 'txt_label').replace(ext, '.txt')
+    # anno_dir = filename.replace(
+    #     'images_train', 'txt_label').replace(ext, '.txt')
     preds = [normalize_coords(coord) for coord in preds]
-    annos = []
-    with open(anno_dir, 'r') as anno_f:
-        lines = anno_f.readlines()
-    for line in lines:
-        coords = []
-        numbers = line.strip().split(' ')
-        coords_tmp = [float(n) for n in numbers]
+    # annos = []
+    # with open(anno_dir, 'r') as anno_f:
+    #     lines = anno_f.readlines()
+    # for line in lines:
+    #     coords = []
+    #     numbers = line.strip().split(' ')
+    #     coords_tmp = [float(n) for n in numbers]
 
-        for i in range(len(coords_tmp) // 2):
-            coords.append([coords_tmp[2 * i], coords_tmp[2 * i + 1]])
-        annos.append(normalize_coords(coords))
+    #     for i in range(len(coords_tmp) // 2):
+    #         coords.append([coords_tmp[2 * i], coords_tmp[2 * i + 1]])
+    #     annos.append(normalize_coords(coords))
     return preds, annos
 
 
 def vis_one(results, virtual_center, cluster_center, filename, width=9):
     img = cv2.imread(filename)
-    img_gt = cv2.imread(filename)
-    img_vc = cv2.imread(filename)
-    img_circle = cv2.imread(filename)
+    # img_gt = cv2.imread(filename)
+    # img_vc = cv2.imread(filename)
+    # img_circle = cv2.imread(filename)
     img_pil = PIL.Image.fromarray(img)
-    img_gt_pil = PIL.Image.fromarray(img_gt)
+    # img_gt_pil = PIL.Image.fromarray(img_gt)
     preds, annos = parse_lanes(results, filename, (384, 672), ext='.png')
     # print('anno length {}'.format(len(annos)))
-    for idx, anno_lane in enumerate(annos):
-        PIL.ImageDraw.Draw(img_gt_pil).line(
-            xy=anno_lane, fill=COLORS[idx + 1], width=width)
+    # for idx, anno_lane in enumerate(annos):
+    #     PIL.ImageDraw.Draw(img_gt_pil).line(
+    #         xy=anno_lane, fill=COLORS[idx + 1], width=width)
     for idx, pred_lane in enumerate(preds):
         PIL.ImageDraw.Draw(img_pil).line(
             xy=pred_lane, fill=COLORS[idx + 1], width=width)
-    for idx, vp in enumerate(virtual_center):
-        vp_tuple = [tuple(p) for p in vp]
-        # print('vp tuple:', vp_tuple)
-        for _vp in vp_tuple:
-            cv2.circle(img=img_circle, center=_vp, radius=3,
-                       color=COLORS[idx + 1], thickness=-1)
-            # cv2.circle(img=img_vc, center=_vp, radius=3, color=COLORS[idx + 1], thickness=-1)
-    for idx, cp in enumerate(cluster_center):
-        cv2.circle(img=img_vc, center=cp, radius=10,
-                   color=COLORS[idx + 1], thickness=-1)
-        cv2.circle(img=img_circle, center=cp, radius=40,
-                   color=COLORS[idx + 1], thickness=3)
+    # for idx, vp in enumerate(virtual_center):
+    #     vp_tuple = [tuple(p) for p in vp]
+    #     # print('vp tuple:', vp_tuple)
+    #     for _vp in vp_tuple:
+    #         cv2.circle(img=img_circle, center=_vp, radius=3,
+    #                    color=COLORS[idx + 1], thickness=-1)
+    #         # cv2.circle(img=img_vc, center=_vp, radius=3, color=COLORS[idx + 1], thickness=-1)
+    # for idx, cp in enumerate(cluster_center):
+    #     cv2.circle(img=img_vc, center=cp, radius=10,
+    #                color=COLORS[idx + 1], thickness=-1)
+    #     cv2.circle(img=img_circle, center=cp, radius=40,
+    #                color=COLORS[idx + 1], thickness=3)
     img = np.array(img_pil, dtype=np.uint8)
-    img_gt = np.array(img_gt_pil, dtype=np.uint8)
+    # img_gt = np.array(img_gt_pil, dtype=np.uint8)
 
-    return img, img_gt, img_vc, img_circle
+    return img, None, None, None  # , img_gt, img_vc, img_circle
 
 
 def single_gpu_test(seg_model,
@@ -290,17 +290,17 @@ def single_gpu_test(seg_model,
             dst_show_dir = os.path.join(dirname, 'pred', basename + '.png')
             cv2.imwrite(dst_show_dir, img_vis)
 
-            mkdir(dirname + '/gt/')
-            dst_gt_dir = os.path.join(dirname, 'gt', basename + '_gt.png')
-            cv2.imwrite(dst_gt_dir, img_gt_vis)
+            # mkdir(dirname + '/gt/')
+            # dst_gt_dir = os.path.join(dirname, 'gt', basename + '_gt.png')
+            # cv2.imwrite(dst_gt_dir, img_gt_vis)
 
-            mkdir(dirname + '/vc/')
-            dst_show_vc_dir = os.path.join(dirname, 'vc', basename + '_vc.png')
-            cv2.imwrite(dst_show_vc_dir, virtual_center_vis)
+            # mkdir(dirname + '/vc/')
+            # dst_show_vc_dir = os.path.join(dirname, 'vc', basename + '_vc.png')
+            # cv2.imwrite(dst_show_vc_dir, virtual_center_vis)
 
-            mkdir(dirname + '/cc/')
-            dst_show_cc_dir = os.path.join(dirname, 'cc', basename + '_cc.png')
-            cv2.imwrite(dst_show_cc_dir, img_circle)
+            # mkdir(dirname + '/cc/')
+            # dst_show_cc_dir = os.path.join(dirname, 'cc', basename + '_cc.png')
+            # cv2.imwrite(dst_show_cc_dir, img_circle)
 
         batch_size = data['img'].data[0].size(0)
         for _ in range(batch_size):

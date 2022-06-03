@@ -1,11 +1,11 @@
 from configs.culane.common import *
 from configs.culane.test_common_s4 import *
 """
-    config file of the large version of GANet for tusimple
+    config file of the large version of GANet for Jiqing
 """
 # global settings
-dataset_type = 'CulaneDataset'
-data_root = "/home/ubuntu/anhvlt/ganet/data/culane"
+dataset_type = 'JiqingDataset'
+data_root = "/home/ubuntu/anhvlt/ganet/data/jiqing/"
 test_mode = False
 fpn_layer_num = 4                                    # check
 fpn_down_scale = [4, 8, 16, 32]                      # check
@@ -40,8 +40,8 @@ img_norm_cfg = dict(
     std=[50.5, 53.8, 54.3],
     to_rgb=False,
 )
-ori_scale = (1640, 590)  # for culane
-crop_bbox = [0, 270, 1640, 590]
+ori_scale = (1920, 1080)  # for culane
+crop_bbox = [0, 420, 1920, 1080]
 img_scale = (800, 320)
 train_cfg = dict(
     out_scale=mask_down_scale,
@@ -397,6 +397,7 @@ lr_config = dict(
 # runtime settings
 checkpoint_config = dict(
     interval=1,
+    max_keep_ckpts=1,
 )
 log_config = dict(
     interval=1,

@@ -1,20 +1,17 @@
 #!/bin/bash -e
 
-export CUDA_VISIBLE_DEVICES=3
-
 STRATEGY="random"
 
 DATASET="jiqing"
-ROOT=/home/ubuntu/datasets/jiqing_expressway_dataset
 VIDEO_IDX=$1
 
-MODEL=res18s8
+MODEL=res101s4
 
 N_ROUND=10
 N_INIT=200
 N_SAMPLE=200
 
-N_EPOCH=1
+N_EPOCH=25
 
 OUT_ROOT="checkpoints/"$DATASET"/"$STRATEGY"/"$VIDEO_IDX"/"
 
@@ -48,25 +45,24 @@ unlabeled_pool=$new_unlabeled_pool
 python tools/train.py \
     "configs/"$DATASET"/"$MODEL".py" \
     --work-dir ""$round_out_root"/"$MODEL"/" \
-    --train_list $labeled_pool \
+    --train-list $labeled_pool \
     --n_epoch $N_EPOCH
 
 checkpoint=""$round_out_root"/"$MODEL"/latest.pth"
 
 # # Inference
-# python infer_det.py \
-#     configs/resnet34_det.py \
-#     --output checkpoints/jiqing_"$VIDEO_IDX"_random/round_0/imgs \
-#     --data_root /home/ubuntu/datasets/jiqing_expressway_dataset \
-#     --input $FULL_VID_PATH \
-#     --test_model $teacher_ckpt \
-#     --out_det \
-#     --save_img
+# python "tools/ganet/"$DATASET"/test_dataset.py" \
+#     configs/"$DATASET"/"$MODEL".py \
+#     $checkpoint \
+#     --test_list $FULL_VID_PATH \
+#     --result_dst ""$round_out_root"/txts/" \
+#     --show \
+#     --show_dst ""$round_out_root"/imgs/"
 
 # ffmpeg \
 #     -framerate 30 \
-#     -i checkpoints/jiqing_"$VIDEO_IDX"_random/round_0/imgs/%d.jpg \
-#     checkpoints/jiqing_"$VIDEO_IDX"_random/round_0/"$VIDEO_IDX"_random_0.mp4
+#     -i ""$round_out_root"/imgs/pred/%d.png" \
+#     "$round_out_root"/pred.mp4
 
 for (( round_id=1; round_id <= $N_ROUND; round_id++ ))
 do
@@ -94,26 +90,9 @@ do
     python tools/train.py \
         "configs/"$DATASET"/"$MODEL".py" \
         --work-dir ""$round_out_root"/"$MODEL"/" \
-        --train_list $labeled_pool \
-        --resume-from $checkpoint \
+        --train-list $labeled_pool \
+        --load-from $checkpoint \
         --n_epoch $N_EPOCH
 
     checkpoint=""$round_out_root"/"$MODEL"/latest.pth"
-
-    # # Inference
-    # python infer_det.py \
-    #     configs/resnet34_det.py \
-    #     --output checkpoints/jiqing_"$VIDEO_IDX"_random/round_"$round_id"/imgs \
-    #     --data_root /home/ubuntu/datasets/jiqing_expressway_dataset \
-    #     --num_workers 4 \
-    #     --batch_size 256 \
-    #     --input $FULL_VID_PATH \
-    #     --test_model $teacher_ckpt \
-    #     --out_det \
-    #     --save_img
-
-    # ffmpeg \
-    #     -framerate 30 \
-    #     -i checkpoints/jiqing_"$VIDEO_IDX"_random/round_"$round_id"/imgs/%d.jpg \
-    #     checkpoints/jiqing_"$VIDEO_IDX"_random/round_"$round_id"/"$VIDEO_IDX"_random_"$round_id".mp4
 done
