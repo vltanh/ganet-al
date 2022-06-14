@@ -7,15 +7,16 @@ VIDEO_IDX=$1
 
 MODEL=res101s4
 
-N_ROUND=10
-N_INIT=200
-N_SAMPLE=200
+N_ROUND=5
+N_INIT=100
+N_SAMPLE=100
 
 N_EPOCH=50
 
 OUT_ROOT="checkpoints/"$DATASET"/"$STRATEGY"/"$VIDEO_IDX"/"
 
 FULL_VID_PATH="data/"$DATASET"/list/"$VIDEO_IDX".txt"
+VAL_VID_PATH="data/"$DATASET"/list/"$VIDEO_IDX".txt"
  
 # ===========================================================
 
@@ -50,19 +51,19 @@ python tools/train.py \
 
 checkpoint=""$round_out_root"/"$MODEL"/latest.pth"
 
-# # Inference
-# python "tools/ganet/"$DATASET"/test_dataset.py" \
-#     configs/"$DATASET"/"$MODEL".py \
-#     $checkpoint \
-#     --test_list $FULL_VID_PATH \
-#     --result_dst ""$round_out_root"/txts/" \
-#     --show \
-#     --show_dst ""$round_out_root"/imgs/"
+# Inference
+python "tools/ganet/"$DATASET"/test_dataset.py" \
+    configs/"$DATASET"/"$MODEL".py \
+    $checkpoint \
+    --test_list $VAL_VID_PATH \
+    --result_dst ""$round_out_root"/txts/" \
+    --show \
+    --show_dst ""$round_out_root"/imgs/"
 
-# ffmpeg \
-#     -framerate 30 \
-#     -i ""$round_out_root"/imgs/pred/%d.png" \
-#     "$round_out_root"/pred.mp4
+ffmpeg \
+    -framerate 30 \
+    -i ""$round_out_root"/imgs/"$VIDEO_IDX"/pred/%d.png" \
+    "$round_out_root"/pred.mp4
 
 for (( round_id=1; round_id <= $N_ROUND; round_id++ ))
 do
@@ -95,4 +96,18 @@ do
         --n_epoch $N_EPOCH
 
     checkpoint=""$round_out_root"/"$MODEL"/latest.pth"
+
+    # Inference
+    python "tools/ganet/"$DATASET"/test_dataset.py" \
+        configs/"$DATASET"/"$MODEL".py \
+        $checkpoint \
+        --test_list $VAL_VID_PATH \
+        --result_dst ""$round_out_root"/txts/" \
+        --show \
+        --show_dst ""$round_out_root"/imgs/"
+
+    ffmpeg \
+        -framerate 30 \
+        -i ""$round_out_root"/imgs/"$VIDEO_IDX"/pred/%d.png" \
+        "$round_out_root"/pred.mp4
 done
