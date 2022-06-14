@@ -165,19 +165,17 @@ def ploy_fitting_cube(line, h, w, sample_num=100):
         for i in np.unique(line_coords[:, 1])
     ])
 
+    if len(line_coords) < 2:
+        return None
+
     X = line_coords[:, 1]
     Y = line_coords[:, 0]
 
-    if len(X) < 2:
-        return None
     new_x = np.linspace(max(X[0], 0), min(X[-1], h), sample_num)
 
     if len(X) > 3:
         ipo3 = spi.splrep(X, Y, k=3)
         iy3 = spi.splev(new_x, ipo3)
-        # print(X, Y)
-        # print(iy3)
-        # input()
     else:
         ipo3 = spi.splrep(X, Y, k=1)
         iy3 = spi.splev(new_x, ipo3)
