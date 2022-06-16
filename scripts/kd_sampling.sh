@@ -1,22 +1,22 @@
 #!/bin/bash -e
 
-STRATEGY="random"
+STRATEGY="kd"
 
 DATASET="jiqing"
 VIDEO_IDX=$1
 
 MODEL=res101s4
 
-N_ROUND=10
+N_ROUND=2
 N_INIT=50
 N_SAMPLE=50
 
-N_EPOCH=50
+N_EPOCH=1
 
 OUT_ROOT="checkpoints/"$DATASET"/"$STRATEGY"/"$VIDEO_IDX"/"
 
 FULL_VID_PATH="data/"$DATASET"/list/"$VIDEO_IDX".txt"
-VAL_VID_PATH="data/"$DATASET"/list/"$VIDEO_IDX".txt"
+VAL_VID_PATH="data/"$DATASET"/list_20fps/"$VIDEO_IDX".txt"
  
 # ===========================================================
 

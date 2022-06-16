@@ -99,7 +99,7 @@ class LaneLossAggress(torch.nn.Module):
             loss_weight=1.0,
         ),
     ):
-        super(LaneLossAggress, self).__init__()
+        super().__init__()
         self.focalloss = FocalLoss()
         self.smoothl1loss = build_loss(loss_reg)
         self.regl1kploss = RegL1KpLoss()
@@ -108,12 +108,13 @@ class LaneLossAggress(torch.nn.Module):
         loss_result = {}
         for i, loss_item in enumerate(outputs):
             loss_func = getattr(self, loss_item['type'])
+            loss_name = loss_item.get("name", f"{i}_{loss_item['type']}")
             if "mask" in loss_item:
-                loss_result[f"{i}_{loss_item['type']}"] = \
+                loss_result[loss_name] = \
                     loss_func(loss_item['pred'], loss_item['gt'], loss_item['mask']) \
-                    * loss_item.get('weight', 1.0)
+                    * loss_item.get('weight', weight)
             else:
-                loss_result[f"{i}_{loss_item['type']}"] = \
+                loss_result[loss_name] = \
                     loss_func(loss_item['pred'], loss_item['gt']) \
-                    * loss_item.get('weight', 1.0)
+                    * loss_item.get('weight', weight)
         return loss_result

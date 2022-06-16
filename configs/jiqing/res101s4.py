@@ -1,5 +1,5 @@
-from configs.culane.common import *
-from configs.culane.test_common_s4 import *
+from configs.jiqing.common import *
+from configs.jiqing.test_common_s4 import *
 """
     config file of the large version of GANet for Jiqing
 """

@@ -40,8 +40,8 @@ img_norm_cfg = dict(
     std=[50.5, 53.8, 54.3],
     to_rgb=False,
 )
-ori_scale = (1920, 1080)  # for jiqing
-crop_bbox = [0, 495, 1920, 1080]
+ori_scale = (1920, 1080)  # (672, 384)  # for jiqing
+crop_bbox = [0, 495, 1920, 1080]  # [0, 150, 672, 384]
 img_scale = (800, 320)
 train_cfg = dict(
     out_scale=mask_down_scale,
@@ -63,7 +63,7 @@ assigner_cfg = dict(
 )
 # model settings
 model = dict(
-    type='GANet',
+    type='GANet_KD',
     pretrained='torchvision://resnet18',
     train_cfg=train_cfg,
     test_cfg=test_cfg,
@@ -71,6 +71,8 @@ model = dict(
     sample_gt_points=sample_gt_points,
     use_smooth=use_smooth,
     point_scale=point_scale,
+    teacher_cfg=None,
+    teacher_ckpt=None,
     backbone=dict(
         type='ResNet',
         depth=18,

@@ -1,5 +1,5 @@
-from configs.culane.common import *
-from configs.culane.test_common_s8 import *
+from configs.jiqing.common import *
+from configs.jiqing.test_common_s4 import *
 """
     config file of the small version of GANet for Jiqing
 """
@@ -7,19 +7,19 @@ from configs.culane.test_common_s8 import *
 dataset_type = 'JiqingDataset'
 data_root = "/home/ubuntu/anhvlt/ganet/data/jiqing/"
 test_mode = False
-fpn_layer_num = 3                            # check
-fpn_down_scale = [8, 16, 32]                 # check
-mask_down_scale = 8                          # check
-hm_down_scale = 8                            # check
+fpn_layer_num = 4                            # check
+fpn_down_scale = [4, 8, 16, 32]                 # check
+mask_down_scale = 4                          # check
+hm_down_scale = 4                            # check
 line_width = 3
 radius = 2  # gaussian circle radius
 root_radius = 4
 vaniehsd_radius = 8
 joint_nums = 1                               # check
 joint_weights = [1, 0.4, 0.2]                # check
-sample_per_lane = [41, 21, 11]               # check
-dcn_point_num = [7, 5, 3]                    # check
-sample_gt_points = [41, 21, 11]              # check
+sample_per_lane = [81, 41, 21, 11]               # check
+dcn_point_num = [9, 7, 5, 3]                    # check
+sample_gt_points = [81, 41, 21, 11]              # check
 loss_weights = dict(
     center=0.0,
     point=1.0,
@@ -31,7 +31,7 @@ use_smooth = False                           # check
 deconv_before = False                        # check
 dcn_only_cls = True                          # check
 point_scale = False                          # check
-deconv_layer = [True, False, False]          # check
+deconv_layer = [True, False, False, False]          # check
 nms_thr = 2
 num_lane_classes = 1
 batch_size = 32                              # check
@@ -40,8 +40,8 @@ img_norm_cfg = dict(
     std=[50.5, 53.8, 54.3],
     to_rgb=False,
 )
-ori_scale = (1920, 1080)  # for jiqing
-crop_bbox = [0, 495, 1920, 1080]
+ori_scale = (1920, 1080)  # (672, 384)  # for jiqing
+crop_bbox = [0, 495, 1920, 1080]  # [0, 150, 672, 384]
 img_scale = (800, 320)
 train_cfg = dict(
     out_scale=mask_down_scale,
@@ -63,7 +63,7 @@ assigner_cfg = dict(
 )
 # model settings
 model = dict(
-    type='GANet',
+    type='GANet_KD',
     pretrained='torchvision://resnet18',
     train_cfg=train_cfg,
     test_cfg=test_cfg,
@@ -71,6 +71,8 @@ model = dict(
     sample_gt_points=sample_gt_points,
     use_smooth=use_smooth,
     point_scale=point_scale,
+    teacher_cfg=None,
+    teacher_ckpt=None,
     backbone=dict(
         type='ResNet',
         depth=18,
@@ -87,7 +89,7 @@ model = dict(
     ),
     neck=dict(
         type='DeformFPN',
-        in_channels=[128, 256, 512],
+        in_channels=[64, 128, 256, 512],
         out_channels=64,
         dcn_point_num=dcn_point_num,
         deconv_layer=deconv_layer,
