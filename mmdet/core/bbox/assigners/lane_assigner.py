@@ -30,10 +30,14 @@ class LaneAssigner():
         b, p, h, w = points_map.shape
         y = torch.arange(h)[:, None, None].repeat(1, w, 1)
         x = torch.arange(w)[None, :, None].repeat(h, 1, 1)
-        coods = torch.cat([y, x], dim=-1)[None, :, :,
-                                          :].repeat(b, 1, 1, p//2).float()
-        grid = coods.reshape(b, h, w, p).permute(
-            0, 3, 1, 2).to(points_map.device)
+        coods = torch.cat([y, x], dim=-1)[
+            None, :, :, :
+        ].repeat(b, 1, 1, p // 2).float()
+        grid = coods.reshape(
+            b, h, w, p
+        ).permute(
+            0, 3, 1, 2
+        ).to(points_map.device)
         return grid
 
     def assign(self, points_map, gt_points, sample_gt_points=None):
@@ -46,7 +50,10 @@ class LaneAssigner():
         b, l, g, _ = gt_points.shape
         if sample_gt_points is not None:
             sample_idx = self.sample_idx(
-                g, sample_gt_points, device=points_map.device)
+                g,
+                sample_gt_points,
+                device=points_map.device
+            )
 
         # generate cood grid
         grid = self.generate_grid(points_map)
@@ -67,10 +74,6 @@ class LaneAssigner():
         for i in range(b):
             gt_points_int_y = gt_points_int[i, :, 0]  # l*g
             gt_points_int_x = gt_points_int[i, :, 1]
-
-            # print(gt_points_int_x)
-            # print(gt_points_int_y)
-            # input()
 
             points_cat.append(
                 points_map[

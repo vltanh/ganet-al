@@ -18,18 +18,32 @@ from .ctnet_head import CtnetHead
 
 def compute_locations(shape, device):
     pos = torch.arange(
-        0, shape[-1], step=1, dtype=torch.float32, device=device)
+        0, shape[-1],
+        step=1,
+        dtype=torch.float32,
+        device=device,
+    )
     pos = pos.reshape((1, 1, -1))
     pos = pos.repeat(shape[0], shape[1], 1)
     return pos
 
 
 def make_mask(shape=(1, 80, 200), device=torch.device('cuda')):
-    x_coord = torch.arange(0, shape[-1], step=1, dtype=torch.float32, device=device)
+    x_coord = torch.arange(
+        0, shape[-1],
+        step=1,
+        dtype=torch.float32,
+        device=device,
+    )
     x_coord = x_coord.reshape(1, 1, -1)
     # x_coord = np.repeat(x_coord, shape[1], 1)
     x_coord = x_coord.repeat(1, shape[1], 1)
-    y_coord = torch.arange(0, shape[-2], step=1, dtype=torch.float32, device=device)
+    y_coord = torch.arange(
+        0, shape[-2],
+        step=1,
+        dtype=torch.float32,
+        device=device,
+    )
     y_coord = y_coord.reshape(1, -1, 1)
     y_coord = y_coord.repeat(1, 1, shape[-1])
     coord_mat = torch.cat((x_coord, y_coord), axis=0)
@@ -38,11 +52,21 @@ def make_mask(shape=(1, 80, 200), device=torch.device('cuda')):
 
 
 def make_coordmat(shape=(1, 80, 200), device=torch.device('cuda')):
-    x_coord = torch.arange(0, shape[-1], step=1, dtype=torch.float32, device=device)
+    x_coord = torch.arange(
+        0, shape[-1],
+        step=1,
+        dtype=torch.float32,
+        device=device,
+    )
     x_coord = x_coord.reshape(1, 1, -1)
     # x_coord = np.repeat(x_coord, shape[1], 1)
     x_coord = x_coord.repeat(1, shape[1], 1)
-    y_coord = torch.arange(0, shape[-2], step=1, dtype=torch.float32, device=device)
+    y_coord = torch.arange(
+        0, shape[-2],
+        step=1,
+        dtype=torch.float32,
+        device=device,
+    )
     y_coord = y_coord.reshape(1, -1, 1)
     y_coord = y_coord.repeat(1, 1, shape[-1])
     coord_mat = torch.cat((x_coord, y_coord), axis=0)
@@ -54,10 +78,22 @@ class UpSampleLayer(nn.Module):
     def __init__(self, in_ch, out_ch):
         super(UpSampleLayer, self).__init__()
         self.Conv_BN_ReLU_2 = nn.Sequential(
-            nn.Conv2d(in_channels=in_ch, out_channels=out_ch, kernel_size=3, stride=1, padding=1),
+            nn.Conv2d(
+                in_channels=in_ch,
+                out_channels=out_ch,
+                kernel_size=3,
+                stride=1,
+                padding=1,
+            ),
             nn.BatchNorm2d(out_ch),
             nn.ReLU(),
-            nn.Conv2d(in_channels=out_ch, out_channels=out_ch, kernel_size=3, stride=1, padding=1),
+            nn.Conv2d(
+                in_channels=out_ch,
+                out_channels=out_ch,
+                kernel_size=3,
+                stride=1,
+                padding=1,
+            ),
             nn.BatchNorm2d(out_ch),
             nn.ReLU()
         )
@@ -71,13 +107,16 @@ class UpSampleLayer(nn.Module):
     def forward(self, x):
         out = self.Conv_BN_ReLU_2(x)
         # out = self.upsample(out)
-        out = F.interpolate(input=out, scale_factor=2, mode='bilinear')
+        out = F.interpolate(
+            input=out,
+            scale_factor=2,
+            mode='bilinear',
+        )
         return out
 
 
 @HEADS.register_module()
 class GANetHeadFast(nn.Module):
-
     def __init__(self,
                  heads,
                  in_channels,
@@ -96,8 +135,13 @@ class GANetHeadFast(nn.Module):
         self.hm_idx = hm_idx
         self.joint_nums = joint_nums
         if upsample_num > 0:
-            self.upsample_module = nn.ModuleList([UpSampleLayer(in_ch=branch_in_channels, out_ch=branch_in_channels)
-                                                  for i in range(upsample_num)])
+            self.upsample_module = nn.ModuleList([
+                UpSampleLayer(
+                    in_ch=branch_in_channels,
+                    out_ch=branch_in_channels,
+                )
+                for i in range(upsample_num)
+            ])
         else:
             self.upsample_module = None
 
@@ -105,31 +149,43 @@ class GANetHeadFast(nn.Module):
             heads,
             channels_in=branch_in_channels,
             final_kernel=1,
-            head_conv=branch_in_channels)
+            head_conv=branch_in_channels,
+        )
 
         self.keypts_head = CtnetHead(
             heads,
             channels_in=branch_in_channels,
             final_kernel=1,
-            head_conv=branch_in_channels)
+            head_conv=branch_in_channels,
+        )
 
         self.offset_head = CtnetHead(
-            heads=dict(offset_map=self.joint_nums * 2),
+            heads=dict(
+                offset_map=self.joint_nums * 2,
+            ),
             channels_in=branch_in_channels,
             final_kernel=1,
-            head_conv=branch_in_channels)
+            head_conv=branch_in_channels,
+        )
 
         self.reg_head = CtnetHead(
-            heads=dict(offset_map=2),
+            heads=dict(
+                offset_map=2,
+            ),
             channels_in=branch_in_channels,
             final_kernel=1,
-            head_conv=branch_in_channels)
+            head_conv=branch_in_channels,
+        )
 
     def ktdet_decode(self, heat, offset, error, thr=0.1):
-
         def _nms(heat, kernel=3):
             pad = (kernel - 1) // 2
-            hmax = nn.functional.max_pool2d(heat, (1, 3), stride=(1, 1), padding=(0, 1))
+            hmax = nn.functional.max_pool2d(
+                heat,
+                (1, 3),
+                stride=(1, 1),
+                padding=(0, 1),
+            )
             keep = (hmax == heat).float()  # false:0 true:1
             return heat * keep  # type: tensor
 
@@ -162,15 +218,19 @@ class GANetHeadFast(nn.Module):
             if offset_min_value < 5 and offset_min_idx > 0:
                 offset_min_idx = offset_min_idx - 1
             offset_min = offset_vector[offset_min_idx]
-            virtual_down_x, virtual_down_y = x + offset_min[0] + 0.49999, y + offset_min[1] + 0.49999
+            virtual_down_x = x + offset_min[0] + 0.49999,
+            virtual_down_y = y + offset_min[1] + 0.49999
             virtual_down_coord = [int(virtual_down_x), int(virtual_down_y)]
             return virtual_down_coord
 
         def get_vitual_root(coord, offset_map):
             virtual_down_root0 = get_virtual_down_coord(coord, offset_map, 0)
-            virtual_down_root1 = get_virtual_down_coord(virtual_down_root0, offset_map, 1)
-            virtual_down_root2 = get_virtual_down_coord(virtual_down_root1, offset_map, 2)
-            virtual_down_root3 = get_virtual_down_coord(virtual_down_root2, offset_map, 3)
+            virtual_down_root1 = get_virtual_down_coord(
+                virtual_down_root0, offset_map, 1)
+            virtual_down_root2 = get_virtual_down_coord(
+                virtual_down_root1, offset_map, 2)
+            virtual_down_root3 = get_virtual_down_coord(
+                virtual_down_root2, offset_map, 3)
             return virtual_down_root3
 
         def get_vitual_root_one(coord, offset_map):
@@ -201,9 +261,13 @@ class GANetHeadFast(nn.Module):
         return seeds
 
     def ktdet_decode_fast(self, heat, offset, error, thr=0.1, root_thr=1):
-
         def _nms(heat, kernel=3):
-            hmax = nn.functional.max_pool2d(heat, (1, 3), stride=(1, 1), padding=(0, 1))
+            hmax = nn.functional.max_pool2d(
+                heat,
+                (1, 3),
+                stride=(1, 1),
+                padding=(0, 1),
+            )
             keep = (hmax == heat).float()  # false:0 true:1
             return heat * keep  # type: tensor
 
@@ -271,7 +335,6 @@ class GANetHeadFast(nn.Module):
             kpt_thr=0.4,
             cpt_thr=0.4,
     ):
-
         x_list = list(inputs)
         f_hm = x_list[self.hm_idx]
         if self.upsample_module is not None:
@@ -301,7 +364,12 @@ class GANetHeadFast(nn.Module):
 
         if pts_offset.shape[1] > 2:
             def _nms(heat, kernel=3):
-                hmax = nn.functional.max_pool2d(heat, (1, 3), stride=(1, 1), padding=(0, 1))
+                hmax = nn.functional.max_pool2d(
+                    heat,
+                    (1, 3),
+                    stride=(1, 1),
+                    padding=(0, 1),
+                )
                 keep = (hmax == heat).float()  # false:0 true:1
                 return heat * keep  # type: tensor
 
@@ -310,14 +378,25 @@ class GANetHeadFast(nn.Module):
             mask = torch.lt(offset_split[1], self.root_thr)  # offset < 1
             mask_nms = torch.gt(heat_nms, kpt_thr)  # key point score > 0.3
             mask_low = mask * mask_nms
-            mask_low = torch.squeeze(mask_low).permute(1, 0).detach().cpu().numpy()
+            mask_low = torch.squeeze(
+                mask_low
+            ).permute(1, 0).detach().cpu().numpy()
             idx = np.where(mask_low)
             cpt_seeds = np.array(idx, dtype=int).transpose()
-            kpt_seeds = self.ktdet_decode(kpts_hm, pts_offset, int_offset,
-                                          thr=kpt_thr)  # key point position list[dict{} ]
+            kpt_seeds = self.ktdet_decode(
+                kpts_hm,
+                pts_offset,
+                int_offset,
+                thr=kpt_thr,
+            )  # key point position list[dict{} ]
         else:
-            cpt_seeds, kpt_seeds = self.ktdet_decode_fast(kpts_hm, pts_offset, int_offset, thr=kpt_thr,
-                                                          root_thr=self.root_thr)
+            cpt_seeds, kpt_seeds = self.ktdet_decode_fast(
+                kpts_hm,
+                pts_offset,
+                int_offset,
+                thr=kpt_thr,
+                root_thr=self.root_thr,
+            )
 
         return [cpt_seeds, kpt_seeds]
 
