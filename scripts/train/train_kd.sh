@@ -1,43 +1,39 @@
+DATASET=$1
 STRATEGY="kd"
+VIDEO_IDX=$2
 
-DATASET="jiqing"
-VIDEO_IDX=$1
-
-TEACHER_CFG=res101s4
-STUDENTKD_CFG=res18s8_kd
+TEACHER_CFG=$3
+STUDENTKD_CFG=$4
 
 N_EPOCH=50
 
-OUT_ROOT="checkpoints/"$DATASET"/"$STRATEGY"/"$VIDEO_IDX"/"
-
-FULL_VID_PATH="data/"$DATASET"/list_10fps/"$VIDEO_IDX".txt"
-VAL_VID_PATH="data/"$DATASET"/list_20fps/"$VIDEO_IDX".txt"
- 
 # ===========================================================
 
-round_out_root=""$OUT_ROOT"/0/"
-
-labeled_pool=$VAL_VID_PATH
+OUT_ROOT="checkpoints/"$DATASET"/"$STRATEGY"/"$VIDEO_IDX"/0/"
+LABELED_POOL="data/"$DATASET"/list_20fps/"$VIDEO_IDX".txt"
+VAL_POOL="data/"$DATASET"/list_10fps/"$VIDEO_IDX".txt"
+ 
+# ===========================================================
 
 # === TEACHER
 
 # Train
 python tools/train.py \
     "configs/"$DATASET"/"$TEACHER_CFG".py" \
-    --work-dir ""$round_out_root"/"$TEACHER_CFG"/" \
-    --train-list $labeled_pool \
+    --work-dir ""$OUT_ROOT"/"$TEACHER_CFG"/" \
+    --train-list $LABELED_POOL \
     --n_epoch $N_EPOCH
 
-teacher_ckpt=""$round_out_root"/"$TEACHER_CFG"/latest.pth"
+teacher_ckpt=""$OUT_ROOT"/"$TEACHER_CFG"/latest.pth"
 
 # Infer
 python "tools/ganet/"$DATASET"/test_dataset.py" \
     "configs/"$DATASET"/"$TEACHER_CFG".py" \
     $teacher_ckpt \
-    --test_list $FULL_VID_PATH \
-    --result_dst ""$round_out_root"/"$TEACHER_CFG"/txts/" \
+    --test_list $VAL_POOL \
+    --result_dst ""$OUT_ROOT"/"$TEACHER_CFG"/txts/" \
     --show \
-    --show_dst ""$round_out_root"/"$TEACHER_CFG"/imgs/"
+    --show_dst ""$OUT_ROOT"/"$TEACHER_CFG"/imgs/"
 
 # ffmpeg \
 #     -framerate 30 \
@@ -49,22 +45,22 @@ python "tools/ganet/"$DATASET"/test_dataset.py" \
 # Train
 python tools/train_kd.py \
     "configs/"$DATASET"/"$STUDENTKD_CFG".py" \
-    --work-dir ""$round_out_root"/"$STUDENTKD_CFG"/" \
+    --work-dir ""$OUT_ROOT"/"$STUDENTKD_CFG"/" \
     --teacher-cfg "configs/"$DATASET"/"$TEACHER_CFG".py" \
     --teacher-ckpt $teacher_ckpt \
-    --train-list $labeled_pool \
+    --train-list $LABELED_POOL \
     --n_epoch $N_EPOCH
 
-studentkd_ckpt=""$round_out_root"/"$STUDENTKD_CFG"/latest.pth"
+studentkd_ckpt=""$OUT_ROOT"/"$STUDENTKD_CFG"/latest.pth"
 
 # Infer
 python "tools/ganet/"$DATASET"/test_dataset.py" \
     "configs/"$DATASET"/"$STUDENTKD_CFG".py" \
     $studentkd_ckpt \
-    --test_list $FULL_VID_PATH \
-    --result_dst ""$round_out_root"/"$STUDENTKD_CFG"/txts/" \
+    --test_list $VAL_POOL \
+    --result_dst ""$OUT_ROOT"/"$STUDENTKD_CFG"/txts/" \
     --show \
-    --show_dst ""$round_out_root"/"$STUDENTKD_CFG"/imgs/"
+    --show_dst ""$OUT_ROOT"/"$STUDENTKD_CFG"/imgs/"
 
 # ffmpeg \
 #     -framerate 30 \

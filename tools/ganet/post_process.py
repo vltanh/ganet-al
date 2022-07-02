@@ -252,17 +252,24 @@ class PostProcessor(object):
         # print('cpt nums:{} kpt nums:{}'.format(len(cpt_seeds), len(kpt_seeds)))
 
         if self.group_fast is True:
-            kpt_groups, cpt_groups = group_points_fast(kpt_seeds,
-                                                       cpt_seeds,
-                                                       self.cluster_thr,
-                                                       self.cluster_by_center_thr)
+            kpt_groups, cpt_groups = group_points_fast(
+                kpt_seeds,
+                cpt_seeds,
+                self.cluster_thr,
+                self.cluster_by_center_thr,
+            )
         else:
-            kpt_groups, cpt_groups = group_points(kpt_seeds,
-                                                  cpt_seeds,
-                                                  self.cluster_thr,
-                                                  self.cluster_by_center_thr)
+            kpt_groups, cpt_groups = group_points(
+                kpt_seeds,
+                cpt_seeds,
+                self.cluster_thr,
+                self.cluster_by_center_thr,
+            )
 
         lanes, cluster_centers = self.lane_post_process(
-            kpt_groups, cpt_groups, downscale=downscale)
+            kpt_groups,
+            cpt_groups,
+            downscale=downscale,
+        )
 
         return lanes, cluster_centers

@@ -1,22 +1,20 @@
 #!/bin/bash -e
 
-STRATEGY="kd"
+DATASET=$1
+STRATEGY="random"
+VIDEO_IDX=$2
+CFG=$3
 
-DATASET="jiqing"
-VIDEO_IDX=$1
-
-MODEL=res101s4
-
-N_ROUND=2
+N_ROUND=10
 N_INIT=50
 N_SAMPLE=50
 
-N_EPOCH=1
+N_EPOCH=50
 
 OUT_ROOT="checkpoints/"$DATASET"/"$STRATEGY"/"$VIDEO_IDX"/"
 
 FULL_VID_PATH="data/"$DATASET"/list/"$VIDEO_IDX".txt"
-VAL_VID_PATH="data/"$DATASET"/list_20fps/"$VIDEO_IDX".txt"
+VAL_VID_PATH="data/"$DATASET"/list/"$VIDEO_IDX".txt"
  
 # ===========================================================
 
@@ -44,16 +42,16 @@ unlabeled_pool=$new_unlabeled_pool
 
 # Train detector
 python tools/train.py \
-    "configs/"$DATASET"/"$MODEL".py" \
-    --work-dir ""$round_out_root"/"$MODEL"/" \
+    "configs/"$DATASET"/"$CFG".py" \
+    --work-dir ""$round_out_root"/"$CFG"/" \
     --train-list $labeled_pool \
     --n_epoch $N_EPOCH
 
-checkpoint=""$round_out_root"/"$MODEL"/latest.pth"
+checkpoint=""$round_out_root"/"$CFG"/latest.pth"
 
 # Inference
 python "tools/ganet/"$DATASET"/test_dataset.py" \
-    configs/"$DATASET"/"$MODEL".py \
+    configs/"$DATASET"/"$CFG".py \
     $checkpoint \
     --test_list $VAL_VID_PATH \
     --result_dst ""$round_out_root"/txts/" \
@@ -89,17 +87,17 @@ do
 
     # Train detector
     python tools/train.py \
-        "configs/"$DATASET"/"$MODEL".py" \
-        --work-dir ""$round_out_root"/"$MODEL"/" \
+        "configs/"$DATASET"/"$CFG".py" \
+        --work-dir ""$round_out_root"/"$CFG"/" \
         --train-list $labeled_pool \
         --load-from $checkpoint \
         --n_epoch $N_EPOCH
 
-    checkpoint=""$round_out_root"/"$MODEL"/latest.pth"
+    checkpoint=""$round_out_root"/"$CFG"/latest.pth"
 
     # Inference
     python "tools/ganet/"$DATASET"/test_dataset.py" \
-        configs/"$DATASET"/"$MODEL".py \
+        configs/"$DATASET"/"$CFG".py \
         $checkpoint \
         --test_list $VAL_VID_PATH \
         --result_dst ""$round_out_root"/txts/" \

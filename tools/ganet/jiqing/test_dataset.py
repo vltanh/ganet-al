@@ -1,23 +1,20 @@
 import argparse
-import os
-import numpy as np
-import random
-import math
 import json
+import os
 
 import cv2
 import mmcv
-import torch
-import torch.distributed as dist
+import numpy as np
 import PIL.Image
 import PIL.ImageDraw
-from mmcv import Config, DictAction
-from mmcv import Timer
+import torch
 from mmcv.parallel import MMDataParallel, MMDistributedDataParallel
 from mmcv.runner import get_dist_info, init_dist, load_checkpoint
+
 from mmdet.datasets import build_dataloader, build_dataset
 from mmdet.models import build_detector
 from mmdet.utils.general_utils import mkdir
+
 from tools.ganet.common import COLORS
 from tools.ganet.post_process import PostProcessor
 
@@ -156,13 +153,14 @@ def out_result(lanes, dst=None):
                         print('{:.2f} '.format(p[1]), end='', file=f)
 
 
-def parse_lanes(preds, filename, img_shape, ext='.jpg'):
-    def normalize_coords(coords):
-        res = []
-        for coord in coords:
-            res.append((int(coord[0] + 0.5), int(coord[1] + 0.5)))
-        return res
+def normalize_coords(coords):
+    res = []
+    for coord in coords:
+        res.append((int(coord[0] + 0.5), int(coord[1] + 0.5)))
+    return res
 
+
+def parse_lanes(preds, filename, img_shape, ext='.jpg'):
     # anno_dir = filename.replace(
     #     'images_train', 'txt_label').replace(ext, '.txt')
     preds = [normalize_coords(coord) for coord in preds]
@@ -177,7 +175,7 @@ def parse_lanes(preds, filename, img_shape, ext='.jpg'):
     #     for i in range(len(coords_tmp) // 2):
     #         coords.append([coords_tmp[2 * i], coords_tmp[2 * i + 1]])
     #     annos.append(normalize_coords(coords))
-    return preds, annos
+    return preds, None  # annos
 
 
 def vis_one(results, virtual_center, cluster_center, filename, width=9):
@@ -281,13 +279,12 @@ def single_gpu_test(seg_model,
                     width=10,
                 )
 
-            dst_show_dir = os.path.join(show, sub_name[1:])
-
-            dirname = os.path.dirname(dst_show_dir)
-            basename = os.path.splitext(os.path.basename(dst_show_dir))[0]
+            video_idx = os.path.split(os.path.dirname(sub_name))[-1]
+            dirname = os.path.join(show, video_idx)
+            basename = os.path.splitext(os.path.basename(sub_name))[0]
 
             mkdir(dirname + '/pred/')
-            dst_show_dir = os.path.join(dirname, 'pred', basename + '.png')
+            dst_show_dir = os.path.join(dirname, 'pred', f'{i+1}.png')
             cv2.imwrite(dst_show_dir, img_vis)
 
             # mkdir(dirname + '/gt/')
@@ -347,8 +344,8 @@ def main():
 
     # build the model and load checkpoint
     model = build_detector(cfg.model)
-    load_checkpoint(model, args.checkpoint, map_location='cpu')
-    model = MMDataParallel(model, device_ids=[0])
+    load_checkpoint(model, args.checkpoint)
+    model = MMDataParallel(model.cuda(), device_ids=[0])
     if not args.show:
         show_dst = None
     else:
