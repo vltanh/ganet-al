@@ -18,7 +18,7 @@ python "tools/ganet/"$DATASET"/test_dataset.py" \
     --show \
     --show_dst ""$OUT_ROOT"/"$CFG"/imgs/"
 
-# # ffmpeg \
-# #     -framerate 30 \
-# #     -i ""$OUT_ROOT"/"$CFG"/imgs/"$VIDEO_IDX"/pred/%d.png" \
-# #     ""$OUT_ROOT"/"$CFG"/pred.mp4"
+# ffmpeg \
+#     -framerate 30 \
+#     -i ""$OUT_ROOT"/"$CFG"/imgs/"$VIDEO_IDX"/pred/%d.png" \
+#     ""$OUT_ROOT"/"$CFG"/pred.mp4"
