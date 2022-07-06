@@ -8,7 +8,7 @@ TEACHER_CFG=$3
 STUDENTKD_CFG=$4
 STUDENT_CFG=$5
 
-N_ROUND=10
+N_ROUND=5
 N_INIT=100
 N_SAMPLE=100
 
@@ -81,6 +81,20 @@ python "tools/ganet/"$DATASET"/test_dataset.py" \
     --show \
     --show_dst ""$round_out_root"/imgs/"
 
+# Evaluate
+./tools/ganet/$DATASET/evaluate/evaluate \
+    -a data/$DATASET/txt_labels/ \
+    -d ""$round_out_root"/txts/" \
+    -i data/$DATASET/ \
+    -l data/$DATASET/list/$VIDEO_IDX.txt \
+    -w 30 \
+    -t 0.5 \
+    -c 1080 \
+    -r 1920 \
+    -f 1 \
+    -o ""$round_out_root"/eval.txt"
+
+# Visualize
 ffmpeg \
     -framerate 30 \
     -i ""$round_out_root"/imgs/"$VIDEO_IDX"/pred/%d.png" \
@@ -156,6 +170,20 @@ do
         --show \
         --show_dst ""$round_out_root"/imgs/"
 
+    # Evaluate
+    ./tools/ganet/$DATASET/evaluate/evaluate \
+        -a data/$DATASET/txt_labels/ \
+        -d ""$round_out_root"/txts/" \
+        -i data/$DATASET/ \
+        -l data/$DATASET/list/$VIDEO_IDX.txt \
+        -w 30 \
+        -t 0.5 \
+        -c 1080 \
+        -r 1920 \
+        -f 1 \
+        -o ""$round_out_root"/eval.txt"
+    
+    # Visualize
     ffmpeg \
         -framerate 30 \
         -i ""$round_out_root"/imgs/"$VIDEO_IDX"/pred/%d.png" \
