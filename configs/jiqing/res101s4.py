@@ -5,7 +5,7 @@ from configs.jiqing.test_common_s4 import *
 """
 # global settings
 dataset_type = 'JiqingDataset'
-data_root = "/home/ubuntu/anhvlt/ganet/data/jiqing/"
+data_root = "data/jiqing/"
 test_mode = False
 fpn_layer_num = 4                                    # check
 fpn_down_scale = [4, 8, 16, 32]                      # check
