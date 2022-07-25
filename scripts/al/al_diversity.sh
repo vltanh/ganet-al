@@ -9,12 +9,12 @@ N_ROUND=5
 N_INIT=100
 N_SAMPLE=100
 
-N_EPOCH=1
+N_EPOCH=50
 
 OUT_ROOT="checkpoints/"$DATASET"/"$STRATEGY"/"$VIDEO_IDX"/"
 
-FULL_VID_PATH="data/"$DATASET"/list_20fps/"$VIDEO_IDX".txt"
-VAL_VID_PATH="data/"$DATASET"/list_20fps/"$VIDEO_IDX".txt"
+FULL_VID_PATH="data/"$DATASET"/list/"$VIDEO_IDX".txt"
+VAL_VID_PATH="data/"$DATASET"/list/"$VIDEO_IDX".txt"
  
 # ===========================================================
 
@@ -83,7 +83,7 @@ do
 
     labeled_pool=""$round_out_root"/labeled.txt"
 
-    # Uncertainty sampling
+    # Diversity sampling
     python strategy/diversity_sampling.py \
         --inp_path $unlabeled_pool \
         --out_path $labeled_pool \
