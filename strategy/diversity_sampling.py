@@ -91,9 +91,9 @@ def load_data(cfg, path):
     dataset = build_dataset(cfg.data.test)
     dataloader = build_dataloader(
         dataset,
-        samples_per_gpu=154,
+        samples_per_gpu=1,
         workers_per_gpu=cfg.data.workers_per_gpu,
-        dist=True,
+        dist=False,
         shuffle=False,
     )
     return dataloader
