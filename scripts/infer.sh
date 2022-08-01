@@ -1,18 +1,15 @@
 DATASET=$1
-STRATEGY=$2
-VIDEO_IDX=$3
-CFG=$4
+OUT_ROOT=$2
+CFG=$3
 
-OUT_ROOT="checkpoints/"$DATASET"/"$STRATEGY"/"$VIDEO_IDX"/0/"
-INPUT_PATH="data/"$DATASET"/list_10fps/"$VIDEO_IDX".txt"
-CKPT=""$OUT_ROOT"/"$CFG"/latest.pth"
+INPUT_PATH="data/"$DATASET"/list/"$VIDEO_IDX".txt"
  
 # ===========================================================
 
 # Infer
 python "tools/ganet/"$DATASET"/test_dataset.py" \
     "configs/"$DATASET"/"$CFG".py" \
-    $CKPT \
+    ""$OUT_ROOT"/"$CFG"/latest.pth" \
     --test_list $INPUT_PATH \
     --result_dst ""$OUT_ROOT"/"$CFG"/txts/" \
     --show \

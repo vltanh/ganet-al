@@ -1,5 +1,4 @@
 DATASET=$1
-STRATEGY="kd"
 VIDEO_IDX=$2
 
 TEACHER_CFG=$3
@@ -9,9 +8,9 @@ N_EPOCH=50
 
 # ===========================================================
 
-OUT_ROOT="checkpoints/"$DATASET"/"$STRATEGY"/"$VIDEO_IDX"/0/"
-LABELED_POOL="data/"$DATASET"/list_20fps/"$VIDEO_IDX".txt"
-VAL_POOL="data/"$DATASET"/list_10fps/"$VIDEO_IDX".txt"
+OUT_ROOT="checkpoints/"$DATASET"/"$VIDEO_IDX"/"
+LABELED_POOL="data/"$DATASET"/list/"$VIDEO_IDX".txt"
+VAL_POOL="data/"$DATASET"/list/"$VIDEO_IDX".txt"
  
 # ===========================================================
 
