@@ -8,7 +8,7 @@ INIT_STRATEGY=$2
 
 CFG=$4
 
-N_ROUND=10
+N_ROUND=5
 N_SAMPLE=100
 
 N_EPOCH=50
@@ -22,7 +22,7 @@ VAL_VID_PATH="data/"$DATASET"/list/"$VIDEO_IDX".txt"
 # ===========================================================
 
 unlabeled_pool=""$INIT_ROOT"/unlabeled.txt"
-checkpoint=""$INIT_ROOT"/"$CFG"/latest.pth"
+ckpt=""$INIT_ROOT"/"$CFG"/latest.pth"
 
 for (( round_id=1; round_id <= $N_ROUND; round_id++ ))
 do
