@@ -3,14 +3,14 @@
 DATASET=$1
 VIDEO_IDX=$3
 
-STRATEGY="random"
+STRATEGY="uncertainty"
 INIT_STRATEGY=$2
 
 TEACHER_CFG=$4
 STUDENTKD_CFG=$5
 STUDENT_CFG=$6
 
-N_ROUND=10
+N_ROUND=5
 N_SAMPLE=100
 
 N_EPOCH=50
@@ -23,8 +23,11 @@ VAL_VID_PATH="data/"$DATASET"/list/"$VIDEO_IDX".txt"
  
 # ===========================================================
 
+labeled_pool=""$INIT_ROOT"/labeled.txt"
 unlabeled_pool=""$INIT_ROOT"/unlabeled.txt"
-teacher_ckpt=""$round_out_root"/"$TEACHER_CFG"/latest.pth"
+teacher_ckpt=""$INIT_ROOT"/"$TEACHER_CFG"/latest.pth"
+
+round_out_root=""$OUT_ROOT"/0/"
 
 # Train student-kd
 python tools/train_kd.py \
