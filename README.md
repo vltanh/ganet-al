@@ -1,3 +1,53 @@
+### Setup
+
+#### Libraries
+
+1. Clone this repository and enter it:
+
+```shell
+git clone https://github.com/vltanh/ganet-al
+cd GANet
+```
+
+1. Create a conda virtual environment and activate it.
+
+```shell
+conda create -n ganet python=3.7 -y
+conda activate ganet
+pip install torch==1.6.0+cu101 torchvision==0.7.0+cu101 -f https://download.pytorch.org/whl/torch_stable.html
+pip install -r requirements/build.txt
+python setup.py develop
+```
+
+#### Dataset
+
+Setup so that the data directory is as follows
+
+```
+data
+    |- jiqing
+        |- images_train
+            |- 0250
+                |- 1.png
+                |- ...
+            |- ...
+        |- txt_label
+            |- 0250
+                |- 1.txt
+                |- ...
+            |- ...
+        |- txt_labels
+            |- images_train
+                |- 0250
+                    |- 1.lines.txt
+                    |- ...
+                |- ...
+```
+
+#### Pretrained models
+
+Download into `dino_models` the [dino_vitbase8_pretrain_full_checkpoint.pth](https://dl.fbaipublicfiles.com/dino/dino_vitbase8_pretrain/dino_vitbase8_pretrain_full_checkpoint.pth)
+
 ### Full
 
 #### Initial round
