@@ -146,10 +146,11 @@ where:
 ### Infer
 
 ```
-CUDA_VISIBLE_DEVICES=4 bash -e scripts/infer.sh jiqing checkpoints/jiqing/diversity/0251/0 res101s4
+CUDA_VISIBLE_DEVICES=4 bash -e scripts/infer.sh jiqing 0251 res101s4 checkpoints/jiqing/diversity/0251/0/res101s4
 ```
 
 where:
 - `jiqing`: dataset index
-- `checkpoints/jiqing/diversity/0251/0`: path to output directory
+- `0251`: video index
 - `res101s4`: configuration file index for the teacher network
+- `checkpoints/jiqing/diversity/0251/0/res101s4`: path to output directory

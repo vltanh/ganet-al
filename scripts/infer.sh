@@ -1,6 +1,7 @@
 DATASET=$1
-OUT_ROOT=$2
+VIDEO_IDX=$2
 CFG=$3
+OUT_ROOT=$4
 
 INPUT_PATH="data/"$DATASET"/list/"$VIDEO_IDX".txt"
  
@@ -9,13 +10,13 @@ INPUT_PATH="data/"$DATASET"/list/"$VIDEO_IDX".txt"
 # Infer
 python "tools/ganet/"$DATASET"/test_dataset.py" \
     "configs/"$DATASET"/"$CFG".py" \
-    ""$OUT_ROOT"/"$CFG"/latest.pth" \
+    ""$OUT_ROOT"/latest.pth" \
     --test_list $INPUT_PATH \
-    --result_dst ""$OUT_ROOT"/"$CFG"/txts/" \
+    --result_dst ""$OUT_ROOT"/txts/" \
     --show \
-    --show_dst ""$OUT_ROOT"/"$CFG"/imgs/"
+    --show_dst ""$OUT_ROOT"/imgs/"
 
 # ffmpeg \
 #     -framerate 30 \
-#     -i ""$OUT_ROOT"/"$CFG"/imgs/"$VIDEO_IDX"/pred/%d.png" \
-#     ""$OUT_ROOT"/"$CFG"/pred.mp4"
+#     -i ""$OUT_ROOT"/imgs/"$VIDEO_IDX"/pred/%d.png" \
+#     ""$OUT_ROOT"/pred.mp4"
