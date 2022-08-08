@@ -42,6 +42,9 @@ data
                     |- 1.lines.txt
                     |- ...
                 |- ...
+        |- list
+            |- 0250.txt
+            |- ...
 ```
 
 #### Pretrained models
