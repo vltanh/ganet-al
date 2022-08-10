@@ -9,15 +9,24 @@ git clone https://github.com/vltanh/ganet-al
 cd GANet
 ```
 
-1. Create a conda virtual environment and activate it.
+2. Create a conda virtual environment and install necessary packages
 
 ```shell
 conda create -n ganet python=3.7 -y
 conda activate ganet
-pip install torch==1.6.0+cu101 torchvision==0.7.0+cu101 -f https://download.pytorch.org/whl/torch_stable.html
+
+# For CUDA 11.0
+pip install torch==1.7.1+cu110 torchvision==0.8.2+cu110 -f https://download.pytorch.org/whl/torch_stable.html
+# For CUDA 10.1
+# pip install torch==1.6.0+cu101 torchvision==0.7.0+cu101 -f https://download.pytorch.org/whl/torch_stable.html
+
 pip install -r requirements/build.txt
 python setup.py develop
 ```
+
+3. Check and install OpenCV 3,4 according to [this tutorial](https://linuxize.com/post/how-to-install-opencv-on-ubuntu-18-04/). Then get into `tools/ganet/jiqing/evaluate` and `make`.
+
+4. Install `ffmpeg` using `apt` or locally.
 
 #### Dataset
 
